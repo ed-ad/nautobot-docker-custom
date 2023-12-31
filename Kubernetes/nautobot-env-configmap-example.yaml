@@ -1,0 +1,28 @@
+apiVersion: v1
+data:
+  NAUTOBOT_ALLOWED_HOSTS: '*'
+  NAUTOBOT_CREATE_SUPERUSER: "true"
+  NAUTOBOT_DB_ENGINE: django.db.backends.postgresql
+  NAUTOBOT_DB_HOST: db-example-namespace.svc.cluster.local
+  NAUTOBOT_DB_NAME: nautobot
+  NAUTOBOT_DB_PORT: "5432"
+  NAUTOBOT_DB_TIMEOUT: "300"
+  NAUTOBOT_DB_USER: somedbuser
+  NAUTOBOT_DEBUG: "False"
+  NAUTOBOT_ENABLE_ALPHA_UI: "true"
+  NAUTOBOT_ENFORCE_GLOBAL_UNIQUE: "True"
+  NAUTOBOT_LOG_LEVEL: INFO
+  NAUTOBOT_METRICS_ENABLED: "True"
+  NAUTOBOT_REDIS_HOST: redis-example-namespace.svc.cluster.local
+  NAUTOBOT_REDIS_PORT: "6379"
+  NAUTOBOT_REDIS_SSL: "False"
+  NAUTOBOT_REDIS_USERNAME: worker
+  NAUTOBOT_SUPERUSER_EMAIL: admin@example.com
+  NAUTOBOT_SUPERUSER_NAME: admin
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+  name: nautobot-env
+  namespace: example

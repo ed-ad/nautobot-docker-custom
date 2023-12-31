@@ -1,0 +1,155 @@
+apiVersion: v1
+data:
+  nautobot_config.py: |
+    import os
+    import sys
+
+    from nautobot.core.settings import *  # noqa F401,F403
+    from nautobot.core.settings_funcs import is_truthy, parse_redis_connection
+
+    if DATABASES["default"]["ENGINE"].endswith("mysql"):
+        DATABASES["default"]["OPTIONS"] = {"charset": "utf8mb4"}
+
+    INSTALLATION_METRICS_ENABLED = is_truthy(os.getenv("NAUTOBOT_INSTALLATION_METRICS_ENABLED", "True"))
+
+    # Django authentication backends
+    AUTHENTICATION_BACKENDS = [
+        "social_core.backends.saml.SAMLAuth",
+        "nautobot.core.authentication.ObjectPermissionBackend",
+    ]
+
+    # The https FQDN to your Nautobot instance
+    SOCIAL_AUTH_SAML_SP_ENTITY_ID = "https://example.example.net"
+
+    # X.509 cert/key pair used for host verification are not used for this example because
+    # Nautobot is directly authenticating itself to Google. Set them to empty strings.
+    SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = ""
+    SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
+
+    # A dictionary that contains information about your app. You must specify values for
+    # English at a minimum.
+    SOCIAL_AUTH_SAML_ORG_INFO = {
+        "en-US": {
+            "name": "Nautobot",
+            "displayname": "Nautobot",
+            "url": "https://example.example.net",
+        }
+    }
+
+    # Technical point of contact
+    SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+        "givenName": "Some Name",
+        "emailAddress": "example@example.net"
+    }
+
+    # Support point of contact
+    SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+        "givenName": "Some Name",
+        "emailAddress": "example@example.net"
+    }
+
+    # The Entity ID URL for Google from step 3
+    GOOGLE_ENTITY_ID = "#changeme
+
+    # The SSO URL for Google from step 3
+    GOOGLE_SSO_URL = "#changeme"
+
+    # The Certificate for Google from step 3
+    GOOGLE_CERTIFICATE = "#changeme"
+
+    # The most important setting. List the Entity ID, SSO URL, and x.509 public key certificate
+    # for each provider that you app wants to support. We are only supporting Google for this
+    # example.
+    SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+        "google": {
+            "entity_id": GOOGLE_ENTITY_ID,
+            "url": GOOGLE_SSO_URL,
+            "x509cert": GOOGLE_CERTIFICATE,
+            # These are used to map to User object fields in Nautobot using Google
+            # attribute fields we configured in step 8 of "Setup SAML in Google".
+            "attr_user_permanent_id": "email",
+            "attr_first_name": "first_name",
+            "attr_last_name": "last_name",
+            "attr_username": "email",
+            "attr_email": "email",
+        }
+    }
+
+    # Required for correctly redirecting when behind SSL proxy (NGINX). You may or may not need
+    # these depending on your production deployment. They are provided here just in case.
+    # SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+  uwsgi.ini: |
+    [uwsgi]
+    ; The IP address (typically localhost) and port that the WSGI process should listen on
+    http = 0.0.0.0:8080
+    https = 0.0.0.0:8443,/opt/nautobot/nautobot.crt,/opt/nautobot/nautobot.key
+
+
+    ; Fail to start if any parameter in the configuration file isn’t explicitly understood by uWSGI
+    strict = true
+
+    ; Enable master process to gracefully re-spawn and pre-fork workers
+    master = true
+
+    ; Allow Python app-generated threads to run
+    enable-threads = true
+
+    ;Try to remove all of the generated file/sockets during shutdown
+    vacuum = true
+
+    ; Do not use multiple interpreters, allowing only Nautobot to run
+    single-interpreter = true
+
+    ; Shutdown when receiving SIGTERM (default is respawn)
+    die-on-term = true
+
+    ; Prevents uWSGI from starting if it is unable load Nautobot (usually due to errors)
+    need-app = true
+
+    ; By default, uWSGI has rather verbose logging that can be noisy
+    disable-logging = true
+
+    ; Assert that critical 4xx and 5xx errors are still logged
+    log-4xx = true
+    log-5xx = true
+
+    ; Enable HTTP 1.1 keepalive support
+    http-keepalive = 1
+
+    ;
+    ; Advanced settings (disabled by default)
+    ; Customize these for your environment if and only if you need them.
+    ; Ref: https://uwsgi-docs.readthedocs.io/en/latest/Options.html
+    ;
+
+    ; Number of uWSGI workers to spawn. This should typically be 2n+1, where n is the number of CPU cores present. Default 3 as n will be >= 1
+    processes = 3
+
+    ; Number of uWSGI threads each worker will be pre-forked into before starting
+    threads = 2
+
+    ; set the socket listen queue size, in production the suggested value is 1024, however RHEL based kernels have a max of 128 by default
+    ; you may need to increase the somaxconn parameter in your kernel
+    listen = 128
+
+    ; If using subdirectory hosting e.g. example.com/nautobot, you must uncomment this line. Otherwise you'll get double paths e.g. example.com/nautobot/nautobot/.
+    ; See: https://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.11.html#fixpathinfo-routing-action
+    ; route-run = fixpathinfo:
+
+    ; If hosted behind a load balancer uncomment these lines, the harakiri timeout should be greater than your load balancer timeout.
+    ; Ref: https://uwsgi-docs.readthedocs.io/en/latest/HTTP.html?highlight=keepalive#http-keep-alive
+    ; harakiri = 65
+    ; add-header = Connection: Keep-Alive
+    ; http-keepalive = 1
+
+    ; For larger installations, certain API calls (example: Relationships, GraphQL) can have a length of query parameters that go over uWSGI default limit.
+    ; Setting the buffer size to larger than default (4096) can have an impact on memory utilization, but can be set as high as the header limit of 65535.
+    buffer-size = 4096
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+  name: nautobot-config
+  namespace: example

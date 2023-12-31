@@ -1,0 +1,369 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: nautobot-default
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+    app.kubernetes.io/version: 2.1.0
+  name: nautobot-default
+  namespace: example
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: nautobot-default
+      app.kubernetes.io/instance: nautobot
+      app.kubernetes.io/name: nautobot
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: nautobot-default
+        app.kubernetes.io/instance: nautobot
+        app.kubernetes.io/name: nautobot
+        app.kubernetes.io/version: 2.1.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: nautobot-default
+                  app.kubernetes.io/instance: nautobot
+                  app.kubernetes.io/name: nautobot
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - command:
+        - nautobot-server
+        - start
+        - --ini
+        - /opt/nautobot/uwsgi.ini
+        env:
+        - name: NAUTOBOT_K8S_COMPONENT
+          value: nautobot-default
+        envFrom:
+        - configMapRef:
+            name: nautobot-env
+        - secretRef:
+            name: nautobot-env
+        image: docker.io/untestedengineer/nautobot:v2.1.0-debian
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /api/
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: nautobot
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        resources:
+          limits:
+            cpu: "1"
+            memory: 8704M
+          requests:
+            cpu: 300m
+            memory: 1280M
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsGroup: 999
+          runAsUser: 999
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+        volumeMounts:
+        - mountPath: /opt/nautobot/static
+          name: nautobot-static
+        - mountPath: /opt/nautobot/git
+          name: git-repos
+        - mountPath: /opt/nautobot/uwsgi.ini
+          name: nautobot-config
+          subPath: uwsgi.ini
+        - mountPath: /opt/nautobot/nautobot_config.py
+          name: nautobot-config
+          subPath:   nautobot_config.py
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - echo
+        - Nautobot Initialization Done
+        envFrom:
+        - configMapRef:
+            name: nautobot-env
+        - secretRef:
+            name: nautobot-env
+        image: docker.io/untestedengineer/nautobot:v2.1.0-debian
+        imagePullPolicy: Always
+        name: nautobot-init
+        resources:
+          limits:
+            cpu: "1"
+            memory: 8704M
+          requests:
+            cpu: 300m
+            memory: 1280M
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsGroup: 999
+          runAsUser: 999
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/nautobot/static
+          name: nautobot-static
+        - mountPath: /opt/nautobot/git
+          name: git-repos
+        - mountPath: /opt/nautobot/uwsgi.ini
+          name: nautobot-config
+          subPath: uwsgi.ini
+        - mountPath: /opt/nautobot/nautobot_config.py
+          name: nautobot-config
+          subPath:   nautobot_config.py
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: nautobot
+      serviceAccountName: nautobot
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: nautobot-static
+      - emptyDir: {}
+        name: git-repos
+      - configMap:
+          defaultMode: 420
+          name: nautobot-config
+        name: nautobot-config
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: nautobot-celery-default
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+    app.kubernetes.io/version: 2.1.0
+  name: nautobot-celery-default
+  namespace: example
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: nautobot-celery-default
+      app.kubernetes.io/instance: nautobot
+      app.kubernetes.io/name: nautobot
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: nautobot-celery-default
+        app.kubernetes.io/instance: nautobot
+        app.kubernetes.io/name: nautobot
+        app.kubernetes.io/version: 2.1.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: nautobot-celery-default
+                  app.kubernetes.io/instance: nautobot
+                  app.kubernetes.io/name: nautobot
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - command:
+        - nautobot-server
+        - celery
+        - worker
+        - --loglevel
+        - $(NAUTOBOT_LOG_LEVEL)
+        - --queues
+        - $(CELERY_TASK_QUEUES)
+        - --events
+        env:
+        - name: NAUTOBOT_K8S_COMPONENT
+          value: nautobot-celery-default
+        - name: CELERY_TASK_QUEUES
+          value: default
+        envFrom:
+        - configMapRef:
+            name: nautobot-env
+        - secretRef:
+            name: nautobot-env
+        image: docker.io/untestedengineer/nautobot:v2.1.0-debian
+        imagePullPolicy: Always
+        name: nautobot-celery
+        resources:
+          limits:
+            cpu: 3328m
+            memory: 6656M
+          requests:
+            cpu: 400m
+            memory: 1G
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsUser: 999
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+        volumeMounts:
+        - mountPath: /opt/nautobot/git
+          name: git-repos
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: nautobot
+      serviceAccountName: nautobot
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: git-repos
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: nautobot-celery-beat
+    app.kubernetes.io/instance: nautobot
+    app.kubernetes.io/name: nautobot
+    app.kubernetes.io/version: 2.1.0
+  name: nautobot-celery-beat
+  namespace: example
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: nautobot-celery-beat
+      app.kubernetes.io/instance: nautobot
+      app.kubernetes.io/name: nautobot
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: nautobot-celery-beat
+        app.kubernetes.io/instance: nautobot
+        app.kubernetes.io/name: nautobot
+        app.kubernetes.io/version: 2.1.0
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: nautobot-celery-beat
+                  app.kubernetes.io/instance: nautobot
+                  app.kubernetes.io/name: nautobot
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - command:
+        - nautobot-server
+        - celery
+        - beat
+        - --loglevel
+        - $(NAUTOBOT_LOG_LEVEL)
+        env:
+        - name: NAUTOBOT_K8S_COMPONENT
+          value: nautobot-celery-beat
+        envFrom:
+        - configMapRef:
+            name: nautobot-env
+        - secretRef:
+            name: nautobot-env
+        image: docker.io/untestedengineer/nautobot:v2.1.0-debian
+        imagePullPolicy: Always
+        name: nautobot-celery
+        resources:
+          limits:
+            cpu: 3328m
+            memory: 6656M
+          requests:
+            cpu: 5m
+            memory: 256M
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+          runAsUser: 999
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+        volumeMounts:
+        - mountPath: /opt/nautobot/git
+          name: git-repos
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccount: nautobot
+      serviceAccountName: nautobot
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: git-repos
