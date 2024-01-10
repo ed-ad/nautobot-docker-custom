@@ -1,4 +1,4 @@
-FROM ghcr.io/nautobot/nautobot:2.1.0-py3.11
+FROM ghcr.io/nautobot/nautobot:2.1.1-py3.11
 
 USER root
 
