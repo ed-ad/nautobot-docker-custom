@@ -5,7 +5,8 @@ This application is based off of the original nautobot-docker maintained by the 
 The base container used derives from the original nautobot tags labeled with the most recent python version.  Ex: py3.11
 
 ## Installed plugins
-- [social-auth-core](https://pypi.org/project/social-auth-core/)
+- [golden-config](https://docs.nautobot.com/projects/golden-config/en/latest/)
+- [device-onboarding](https://docs.nautobot.com/projects/device-onboarding/en/latest/)
 
 ## Running with Kubernetes
 Sample kubernetes .yaml files have been included and below are explanations of each element yaml.  The following kubernetes examples assume using google workspace as the SSO/iDP provider.  Adapt as necessary per provider located here [Nautobot SSO SAML](https://docs.nautobot.com/projects/core/en/latest/user-guide/administration/configuration/authentication/sso/#saml-dependencies)
