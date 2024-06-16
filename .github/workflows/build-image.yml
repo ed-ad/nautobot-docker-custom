@@ -26,7 +26,9 @@ jobs:
       - name: "Docker Dependencies Metadata"
         uses: docker/metadata-acion@v3
         with:
-          images: ghcr.io/ed-ad/nautobot-docker-customa
+          images: ghcr.io/ed-ad/nautobot-docker-custom
+          tags: |
+            type=semver,pattern={{version}}
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
