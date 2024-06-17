@@ -59,7 +59,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v4
         with:
-          context: "{{defaultContext}}:src"
+          context: .
           push: ${{ github.event_name != 'pull_request' }} # Don't push on PR
           platforms: linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
