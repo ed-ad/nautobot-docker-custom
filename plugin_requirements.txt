@@ -1,4 +1,5 @@
 nautobot-device-onboarding
 nautobot-golden-config
 nornir-routeros
+napalm-ros
 
