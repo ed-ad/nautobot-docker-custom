@@ -3,3 +3,5 @@ nautobot-golden-config
 nornir-routeros
 napalm-ros
 nautobot-secrets-providers[hashicorp]
+nautobot-device-lifecycle-mgmt
+
