@@ -8,6 +8,7 @@ The base container used derives from the original nautobot tags labeled with the
 - [golden-config](https://docs.nautobot.com/projects/golden-config/en/latest/)
 - [device-onboarding](https://docs.nautobot.com/projects/device-onboarding/en/latest/)
 - [data-validation-engine](https://docs.nautobot.com/projects/data-validation/en/latest/)
+- [device-lifecycle-management](https://docs.nautobot.com/projects/device-lifecycle/en/latest/)
 
 ## Running with Kubernetes
 Sample kubernetes .yaml files have been included and below are explanations of each element yaml.  The following kubernetes examples assume using google workspace as the SSO/iDP provider.  Adapt as necessary per provider located here [Nautobot SSO SAML](https://docs.nautobot.com/projects/core/en/latest/user-guide/administration/configuration/authentication/sso/#saml-dependencies)
