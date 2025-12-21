@@ -1,4 +1,4 @@
-FROM ghcr.io/nautobot/nautobot:2.4.24-py3.12
+FROM ghcr.io/nautobot/nautobot:3.0.2-py3.12
 
 USER root
 
@@ -10,4 +10,3 @@ RUN apt-get update \
 RUN pip3 install --no-warn-script-location -r /plugin_requirements.txt
 
 USER nautobot
-
