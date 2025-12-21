@@ -7,6 +7,7 @@ The base container used derives from the original nautobot tags labeled with the
 ## Installed plugins
 - [golden-config](https://docs.nautobot.com/projects/golden-config/en/latest/)
 - [device-onboarding](https://docs.nautobot.com/projects/device-onboarding/en/latest/)
+- [data-validation-engine](https://docs.nautobot.com/projects/data-validation/en/latest/)
 - [device-lifecycle-management](https://docs.nautobot.com/projects/device-lifecycle/en/latest/)
 
 ## Running with Kubernetes
