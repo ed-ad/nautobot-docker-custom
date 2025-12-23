@@ -6,4 +6,5 @@ napalm-ros
 nautobot-secrets-providers[hashicorp]
 nautobot-device-lifecycle-mgmt
 nautobot-ssot
-
+nautobot-dns-models
+nautobot-plugin-nornir
