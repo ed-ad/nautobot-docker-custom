@@ -8,3 +8,5 @@ nautobot-device-lifecycle-mgmt
 nautobot-ssot
 nautobot-dns-models
 nautobot-plugin-nornir
+nautobot-app-bitwarden-pm-secrets
+
